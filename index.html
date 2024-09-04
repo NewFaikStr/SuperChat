@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Супер чат</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat {
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        #messageInput {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        #messageInput input {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        #messageInput button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #adminControls {
+            margin-top: 10px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        #adminControls input {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        #adminControls button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #loginForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #loginForm input {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        #loginForm button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        /* Обеспечиваем, чтобы элементы не выходили за пределы экрана на мобильных устройствах */
+        @media (max-width: 600px) {
+            #chat {
+                height: 300px;
+            }
+            #messageInput {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginForm">
+        <input type="password" id="adminPassword" placeholder="Введите пароль консоли" />
+        <button id="loginButton">Войти как администратор</button>
+    </div>
+
+    <div id="chat"></div>
+    <div id="messageInput">
+        <input type="text" id="username" placeholder="Введите никнейм..." />
+        <input type="text" id="message" placeholder="Введите сообщение..." />
+        <button id="sendButton">Отправить</button>
+    </div>
+
+    <div id="adminControls">
+        <input type="text" id="messageIdToDelete" placeholder="ID сообщения для удаления" />
+        <button id="deleteButton">Удалить сообщение</button>
+        <button id="clearButton">Очистить чат от мусора</button>
+    </div>
+
+    <script type="module">
+        // Импортируйте необходимые функции из SDK
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+        import { getDatabase, ref, push, set, onChildAdded, remove } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js';
+
+        // Ваши настройки конфигурации Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSo1X32Kkph4egBR3Pz_OXS1MWBe6Fyj8",
+            authDomain: "mychatapp-67ac1.firebaseapp.com",
+            databaseURL: "https://mychatapp-67ac1-default-rtdb.firebaseio.com",
+            projectId: "mychatapp-67ac1",
+            storageBucket: "mychatapp-67ac1.appspot.com",
+            messagingSenderId: "526203132606",
+            appId: "1:526203132606:web:d1c0fb34f58c0881ef9cef"
+        };
+
+        // Инициализация Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('message');
+        const usernameInput = document.getElementById('username');
+        const sendButton = document.getElementById('sendButton');
+        const deleteButton = document.getElementById('deleteButton');
+        const clearButton = document.getElementById('clearButton');
+        const messageIdToDeleteInput = document.getElementById('messageIdToDelete');
+        const loginForm = document.getElementById('loginForm');
+        const adminControls = document.getElementById('adminControls');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const loginButton = document.getElementById('loginButton');
+
+        // Задайте пароль администратора
+        const ADMIN_PASSWORD = "1235217asd"; // Измените на свой пароль
+
+        // Функция для проверки пароля
+        function checkPassword() {
+            const password = adminPasswordInput.value.trim();
+            if (password === ADMIN_PASSWORD) {
+                loginForm.style.display = 'none';
+                adminControls.style.display = 'flex';
+            } else {
+                alert('Неправильный пароль');
+            }
+        }
+
+        // Обработчик нажатия кнопки Login
+        loginButton.addEventListener('click', checkPassword);
+
+        // Функция для отправки сообщения
+        function sendMessage() {
+            const username = usernameInput.value.trim();
+            const messageText = messageInput.value.trim();
+            if (username !== '' && messageText !== '') {
+                const newMessageRef = push(ref(db, 'messages'));
+                set(newMessageRef, {
+                    text: messageText,
+                    username: username,
+                    timestamp: Date.now()
+                });
+                messageInput.value = '';
+            }
+        }
+
+        // Отправка сообщения по нажатию Enter
+        messageInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Отправка сообщения по нажатию кнопки
+        sendButton.addEventListener('click', sendMessage);
+
+        // Удаление сообщения по ID
+        deleteButton.addEventListener('click', function() {
+            const messageId = messageIdToDeleteInput.value.trim();
+            if (messageId) {
+                const messageRef = ref(db, `messages/${messageId}`);
+                remove(messageRef).then(() => {
+                    messageIdToDeleteInput.value = '';
+                }).catch((error) => {
+                    console.error('Ошибка удаления сообщения:', error);
+                });
+            }
+        });
+
+        // Очистка чата
+        clearButton.addEventListener('click', function() {
+            const messagesRef = ref(db, 'messages');
+            remove(messagesRef).catch((error) => {
+                console.error('Ошибка очистки чата:', error);
+            });
+        });
+
+        // Подписка на обновления базы данных
+        onChildAdded(ref(db, 'messages'), function(snapshot) {
+            const message = snapshot.val();
+            const messageId = snapshot.key;
+            const messageDiv = document.createElement('div');
+            messageDiv.setAttribute('data-id', messageId);
+            messageDiv.textContent = `${message.username}: ${message.text}`;
+            chat.appendChild(messageDiv);
+            chat.scrollTop = chat.scrollHeight; // Автоматическая прокрутка вниз
+        });
+    </script>
+</body>
+</html>

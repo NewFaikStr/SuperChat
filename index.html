@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Супер чат</title>
+    <h1 style="color: white;">"Супер чат" это чат созданный для общения!</h1>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,24 +14,25 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f2f5;
+            background-color: #096a17;
         }
         #loginForm {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         #loginForm input, #loginForm button {
             margin-bottom: 10px;
-            padding: 10px;
+            padding: 5px;
             font-size: 16px;
             box-sizing: border-box;
             border-radius: 5px;
+            background-color: rgb(65, 12, 164);
         }
         #loginForm button {
             background-color: #007bff;
-            color: #fff;
+            color: #2509b0;
             border: none;
             cursor: pointer;
         }
@@ -42,11 +44,11 @@
             max-width: 600px;
             height: 400px;
             border-radius: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #0fae0d;
             overflow-y: scroll;
             margin-bottom: 10px;
             padding: 10px;
-            background-color: #fff;
+            background-color: #16c4a7;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         #messageInput {
@@ -56,13 +58,13 @@
             flex-direction: column;
             align-items: flex-start;
             padding: 10px;
-            background-color: #fff;
+            background-color: #0a9118;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         #messageInput input, #messageInput button {
             margin-bottom: 10px;
-            padding: 10px;
+            padding: 20px;
             font-size: 16px;
             border-radius: 5px;
         }
@@ -76,7 +78,7 @@
             cursor: pointer;
         }
         #messageInput button:hover {
-            background-color: #218838;
+            background-color: #16cca2;
         }
         .message {
             display: flex;
@@ -84,7 +86,7 @@
             margin-bottom: 10px;
             padding: 10px;
             border-radius: 10px;
-            background-color: #f8f9fa;
+            background-color: #1fa2bf;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .message p {
@@ -126,7 +128,7 @@
 <body>
     <div id="loginForm">
         <input type="password" id="adminPassword" placeholder="Введите пароль консоли" />
-        <button id="loginButton">Войти как администратор</button>
+        <button id="loginButton">Войти в консоль (Необязательно)</button>
     </div>
 
     <div id="chat"></div>

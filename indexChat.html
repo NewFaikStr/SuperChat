@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalkRoom</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #727272;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            padding: 10px; /* Добавим небольшой отступ для мобильных устройств */
+        }
+
+        .message-id {
+    font-size: 0.8em;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+
+    
+        /* Стили для светлой темы */
+        body.light-theme {
+            background-color: #f5f5f5;
+        }
+        body.light-theme #header {
+            color: #333;
+        }
+        body.light-theme #chat {
+            background-color: #ffffff;
+            border: 5px solid #cccccc;
+        }
+        body.light-theme #messageInput {
+            background-color: #e0e0e0;
+        }
+        body.light-theme .message {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        body.light-theme #adminControls button,
+        body.light-theme #loginForm button,
+        body.light-theme #messageInput button {
+            background-color: #007bff;
+            color: #fff;
+        }
+        body.light-theme #messageInput button:hover {
+            background-color: #075bb6;
+            color: #fff;
+        }
+    
+        body.light-theme #loginForm button:hover {
+            background-color: #0056b3;
+            color: #fff;
+        }
+    
+        #themeToggleButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+    
+        /* Стили для кнопки при наведении */
+        #themeToggleButton:hover {
+            background-color: #0056b3;
+            color: #ffffff;
+        }
+    
+        #header {
+            color: rgb(0, 247, 255);
+            margin-bottom: 20px;
+        }
+        #loginForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #loginForm input, #loginForm button {
+            margin-bottom: 10px;
+            padding: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            background-color: rgb(65, 12, 164);
+        }
+        #loginForm button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        #loginForm button:hover {
+            background-color: #0056b3;
+        }
+        #chat {
+            width: 100%;
+            max-width: 900px;
+            height: 50vh;
+            max-height: 400px;
+            border-radius: 7px;
+            border: 5px solid #000000;
+            overflow-y: scroll;
+            margin-bottom: 7px;
+            padding: 15px;
+            background-color: #414141;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.404);
+        }
+        #messageInput {
+            width: 95%; /* Уменьшите ширину, чтобы учитывать отступы и границы */
+            max-width: 950px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 8px;
+            background-color: #5e5e5e;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box; /* Включите границы и отступы в общую ширину */
+        }
+    
+        #messageInput input, #messageInput button {
+            margin-bottom: 7px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 15px;
+            width: 100%; /* Элементы занимают всю ширину родителя */
+            box-sizing: border-box; /* Включите границы и отступы в общую ширину */
+        }
+        
+        #messageInput input {
+            border: 1px solid #ddd;
+        }
+        
+        #messageInput button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        
+        #messageInput button:hover {
+            background-color: #40cc16;
+        }
+    
+        .message {
+            display: flex;
+            flex-direction: column; /* Обеспечивает размещение времени под сообщением */
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #9b9b9b;
+            box-shadow: 0 4px 2px rgba(97, 241, 14, 0.445);
+        }
+        .message p {
+            margin: 0;
+            padding-left: 0px;
+            color: rgb(0, 0, 0);
+        }
+
+        .message .timestamp {
+            font-size: 1.0em;
+            color: #000000;
+            left: 15px;
+            margin-top: 3px; /* Расстояние между сообщением и временем */
+        }
+        
+        /* Медиа-запросы для мобильных устройств */
+        @media (max-width: 600px) {
+            #chat {
+                height: 200px;
+                max-width: 100%;
+            }
+            #messageInput {
+                width: 100%;
+                flex-direction: column;
+            }
+            #togglePanelButton {
+                position: fixed;
+                left: 110px; /* Положение кнопки справа от панели на мобильных устройствах */
+                top: 50px;
+            }
+            #userPanel {
+                width: 100px; /* Сокращение ширины для мобильных */
+            }
+        }
+    
+        #adminControls {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #adminControls input, #adminControls button {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            border-radius: 5px;
+        }
+        #adminControls button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        #adminControls button:hover {
+            background-color: #0056b3;
+        }
+        /* Стили для боковой панели */
+    
+        /* Обновленные стили для боковой панели */
+        #userPanel {
+            position: fixed;
+            left: -250px; /* Панель скрыта за левым краем */
+            top: 0;
+            height: 100%;
+            width: 210px;
+            background-color: #5a5a5a;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            transition: left 0.3s ease; /* Добавляем плавную анимацию для открытия и закрытия */
+            z-index: 10; /* Устанавливаем z-index для панели */
+        }
+        
+        #userPanel.open {
+            left: 0; /* Когда панель открыта */
+        }
+    
+        #userPanel h2 {
+            margin-top: 0;
+            color: white;
+        }
+        #userPanel ul {
+            list-style: none;
+            padding: 0;
+        }
+        #userPanel li {
+            margin-bottom: 10px;
+            color: white;
+        }
+        #togglePanelButton {
+            position: absolute; /* Абсолютное позиционирование */
+            top: 20px; /* Смещение вверх на 40px от текста "ChatRoom" */
+            left: 50%; /* Центрируем по горизонтали */
+            transform: translateX(-50%); /* Корректируем положение на середину кнопки */
+            padding: 7px;
+            background-color: #084f96;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            z-index: 20; /* Устанавливаем z-index, чтобы кнопка была поверх других элементов */
+            transition: background-color 0.3s ease;
+}
+        #togglePanelButton:hover {
+            background-color: #0056b3;
+        }
+
+        .reply-button {
+            margin-left: auto;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .reply-button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+    
+</head>
+<body>
+    <h1 id="header">TalkRoom</h1>
+    <button id="themeToggleButton">Сменить тему</button>
+    <button id="togglePanelButton">Показать пользователей</button>
+    <div id="userPanel">
+        <h2>Пользователи</h2>
+        <ul id="userList"></ul>
+
+    </div>
+
+    <div id="loginForm">
+        <input type="password" id="adminPassword" placeholder="Введите пароль консоли" />
+        <button id="loginButton">Войти в консоль (Необязательно)</button>
+    </div>
+
+    <div id="chat"></div>
+    <div id="messageInput">
+        <input type="text" id="username" placeholder="Введите никнейм..." />
+        <input type="text" id="message" placeholder="Введите сообщение..." />
+        <button id="sendButton">Отправить</button>
+    </div>
+
+    <div id="adminControls">
+        <input type="text" id="messageIdToDelete" placeholder="ID сообщения для удаления" />
+        <button id="deleteButton">Удалить сообщение</button>
+        <button id="clearButton">Очистить чат от мусора</button>
+    </div>
+
+    <script type="module">
+    let isAdmin = false; // Используем let вместо const
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js';
+        import { getDatabase, ref, push, set, onChildAdded, remove } from 'https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSo1X32Kkph4egBR3Pz_OXS1MWBe6Fyj8",
+            authDomain: "mychatapp-67ac1.firebaseapp.com",
+            databaseURL: "https://mychatapp-67ac1-default-rtdb.firebaseio.com",
+            projectId: "mychatapp-67ac1",
+            storageBucket: "mychatapp-67ac1.appspot.com",
+            messagingSenderId: "526203132606",
+            appId: "1:526203132606:web:d1c0fb34f58c0881ef9cef"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const chat = document.getElementById('chat');
+        const messageInput = document.getElementById('message');
+        const usernameInput = document.getElementById('username');
+        const sendButton = document.getElementById('sendButton');
+        const deleteButton = document.getElementById('deleteButton');
+        const clearButton = document.getElementById('clearButton');
+        const messageIdToDeleteInput = document.getElementById('messageIdToDelete');
+        const loginForm = document.getElementById('loginForm');
+        const adminControls = document.getElementById('adminControls');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const loginButton = document.getElementById('loginButton');
+        const togglePanelButton = document.getElementById('togglePanelButton');
+        const userPanel = document.getElementById('userPanel');
+        const userList = document.getElementById('userList');
+        const themeToggleButton = document.getElementById('themeToggleButton');
+
+        const ADMIN_PASSWORD = "1235217asd";
+
+        function checkPassword() {
+            const password = adminPasswordInput.value.trim();
+            if (password === ADMIN_PASSWORD) {
+                loginForm.style.display = 'none';
+                adminControls.style.display = 'flex';
+                isAdmin = true; // Теперь можно переназначать значение переменной
+                localStorage.setItem('isAdmin', 'true');
+            } else {
+                alert('Неправильный пароль');
+            }
+        }
+
+        loginButton.addEventListener('click', checkPassword);
+
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('light-theme')) {
+                body.classList.remove('light-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        themeToggleButton.addEventListener('click', toggleTheme);
+
+        window.addEventListener('load', function() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+
+    const savedUsername = localStorage.getItem('chatUsername');
+    if (savedUsername) {
+        usernameInput.value = savedUsername;
+    }
+
+    const adminFlag = localStorage.getItem('isAdmin');
+    if (adminFlag === 'true') {
+        isAdmin = true;
+    }
+});
+
+
+
+        function formatTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+}        
+
+        function sendMessage() {
+             const username = usernameInput.value.trim();
+     const messageText = messageInput.value.trim();
+     if (username !== '' && messageText !== '') {
+         const newMessageRef = push(ref(db, 'messages'));
+         set(newMessageRef, {
+             text: messageText,
+             username: username,
+             timestamp: Date.now()
+         });
+         messageInput.value = '';
+         localStorage.setItem('chatUsername', username);
+            }
+        }
+
+        messageInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        deleteButton.addEventListener('click', function() {
+            const messageId = messageIdToDeleteInput.value.trim();
+            if (messageId) {
+                const messageRef = ref(db, `messages/${messageId}`);
+                remove(messageRef).then(() => {
+                    messageIdToDeleteInput.value = '';
+                }).catch((error) => {
+                    console.error('Ошибка удаления сообщения:', error);
+                });
+            }
+        });
+
+        clearButton.addEventListener('click', function() {
+            const messagesRef = ref(db, 'messages');
+            remove(messagesRef).catch((error) => {
+                console.error('Ошибка очистки чата:', error);
+            });
+        });
+
+        onChildAdded(ref(db, 'messages'), function(snapshot) {
+    const message = snapshot.val();
+    const messageId = snapshot.key;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('message');
+    messageDiv.setAttribute('data-id', messageId);
+
+    // Отображайте ID только если пользователь администратор
+    if (isAdmin) {
+        const messageIdDiv = document.createElement('p');
+        messageIdDiv.classList.add('message-id');
+        messageIdDiv.textContent = `Идентификатор сообщения: ${messageId}`;
+        messageDiv.appendChild(messageIdDiv);
+    }
+
+    const messageContent = document.createElement('p');
+    messageContent.textContent = `${message.username}: ${message.text}`;
+    messageDiv.appendChild(messageContent);
+
+    // Создайте элемент для времени
+    const timestampDiv = document.createElement('span');
+    timestampDiv.classList.add('timestamp');
+    timestampDiv.textContent = formatTimestamp(message.timestamp);
+    messageDiv.appendChild(timestampDiv);
+
+    chat.appendChild(messageDiv);
+    chat.scrollTop = chat.scrollHeight;
+});
+        togglePanelButton.addEventListener('click', function() {
+            if (userPanel.classList.contains('open')) {
+        userPanel.classList.remove('open');
+        togglePanelButton.textContent = 'Показать пользователей';
+    } else {
+                userPanel.classList.add('open');
+                togglePanelButton.textContent = 'Скрыть пользователей';
+            }
+        });
+
+
+        
+
+        // Проверяем сохранённый никнейм
+        window.addEventListener('load', function() {
+            const savedUsername = localStorage.getItem('chatUsername');
+            if (savedUsername) {
+                usernameInput.value = savedUsername;
+            }
+        });
+    </script>
+</body>
+</html>
